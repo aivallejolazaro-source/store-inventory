@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Store Inventory</title>
+    <title>Inventario de Tienda</title>
     <style>
         * {
             margin: 0;
@@ -599,21 +599,21 @@
 <body>
     <div class="container">
         <header>
-            <h1>📦 Store Inventory</h1>
-            <p>Manage your products with visual location tracking - Spaces & Wardrobes</p>
+            <h1>📦 Inventario de Tienda</h1>
+            <p>Gestione sus productos con seguimiento de ubicación visual - Espacios y Armarios</p>
         </header>
 
         <div class="stats">
             <div class="stat-card">
-                <div class="stat-label">Total Products</div>
+                <div class="stat-label">Productos Totales</div>
                 <div class="stat-value" id="totalProducts">0</div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">Total Items</div>
+                <div class="stat-label">Artículos Totales</div>
                 <div class="stat-value" id="totalItems">0</div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">Storage Locations</div>
+                <div class="stat-label">Ubicaciones de Almacenamiento</div>
                 <div class="stat-value" id="totalLocations">0</div>
             </div>
         </div>
@@ -624,42 +624,42 @@
                 <div class="controls">
                     <div class="controls-row">
                         <div class="search-container">
-                            <input type="text" id="searchInput" placeholder="🔍 Search products...">
+                            <input type="text" id="searchInput" placeholder="🔍 Buscar productos...">
                         </div>
-                        <button class="import-btn" onclick="document.getElementById('fileInput').click()">📥 Import CSV</button>
-                        <button class="export-btn" onclick="exportToCSV()">📤 Export CSV</button>
+                        <button class="import-btn" onclick="document.getElementById('fileInput').click()">📥 Importar CSV</button>
+                        <button class="export-btn" onclick="exportToCSV()">📤 Exportar CSV</button>
                         <input type="file" id="fileInput" accept=".csv,.xlsx" style="display: none;" onchange="handleFileUpload(event)">
                     </div>
 
                     <div class="controls-row add-product">
-                        <input type="text" id="productName" placeholder="Product name">
-                        <input type="number" id="productPrice" placeholder="Price" min="0" step="0.01">
-                        <input type="number" id="productQuantity" placeholder="Quantity" min="0">
+                        <input type="text" id="productName" placeholder="Nombre del producto">
+                        <input type="number" id="productPrice" placeholder="Precio" min="0" step="0.01">
+                        <input type="number" id="productQuantity" placeholder="Cantidad" min="0">
                     </div>
 
                     <div class="controls-row add-product">
                         <select id="storageType">
-                            <option value="space">Storage Type: Space</option>
-                            <option value="wardrobe">Storage Type: Wardrobe</option>
+                            <option value="space">Tipo de Almacenamiento: Espacio</option>
+                            <option value="wardrobe">Tipo de Almacenamiento: Armario</option>
                         </select>
                         <select id="storageLocation">
-                            <option value="">Select Location</option>
+                            <option value="">Seleccionar ubicación</option>
                         </select>
                         <select id="containerType" style="display: none;">
-                            <option value="direct">Direct in Space</option>
-                            <option value="box">In a Box</option>
+                            <option value="direct">Directo en Espacio</option>
+                            <option value="box">En una Caja</option>
                         </select>
                         <select id="containerLocation" style="display: none;">
-                            <option value="">Select Container</option>
+                            <option value="">Seleccionar contenedor</option>
                         </select>
-                        <button onclick="addProduct()">➕ Add Product</button>
+                        <button onclick="addProduct()">➕ Agregar Producto</button>
                     </div>
                 </div>
 
-                <div class="section-title">📋 Products</div>
+                <div class="section-title">📋 Productos</div>
                 <div class="product-list" id="productList">
                     <div class="empty-state">
-                        <p>No products yet. Add your first product to get started! 🛍️</p>
+                        <p>Sin productos aún. ¡Agregue su primer producto para comenzar! 🛍️</p>
                     </div>
                 </div>
             </div>
@@ -667,24 +667,24 @@
             <!-- Right Column: Storage Visualization & Settings -->
             <div class="section">
                 <div class="controls-section">
-                    <h3 style="margin-bottom: 15px; color: #333;">⚙️ Manage Locations</h3>
+                    <h3 style="margin-bottom: 15px; color: #333;">⚙️ Gestionar Ubicaciones</h3>
                     
                     <!-- SPACES Management -->
                     <div class="form-group">
-                        <label>➕ Add New Space</label>
+                        <label>➕ Agregar Nuevo Espacio</label>
                         <div class="form-row-full">
-                            <input type="text" id="spaceName" placeholder="Space name (e.g., Space 1)">
-                            <button onclick="addSpace()">Add</button>
+                            <input type="text" id="spaceName" placeholder="Nombre del espacio (p. ej., Espacio 1)">
+                            <button onclick="addSpace()">Agregar</button>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label>➕ Add Box to Space</label>
+                        <label>➕ Agregar Caja a Espacio</label>
                         <div style="display: flex; gap: 10px; margin-bottom: 10px;">
                             <select id="spaceForBox" style="flex: 1;">
-                                <option value="">Select Space</option>
+                                <option value="">Seleccionar Espacio</option>
                             </select>
-                            <button onclick="addSpaceBox()" style="flex: 0 0 auto;">Add Box</button>
+                            <button onclick="addSpaceBox()" style="flex: 0 0 auto;">Agregar Caja</button>
                         </div>
                     </div>
 
@@ -692,38 +692,38 @@
                     <hr style="margin: 15px 0; border: none; border-top: 1px solid #ddd;">
 
                     <div class="form-group">
-                        <label>➕ Add New Wardrobe</label>
+                        <label>➕ Agregar Nuevo Armario</label>
                         <div class="form-row-full">
-                            <input type="text" id="wardrobeName" placeholder="Wardrobe name (e.g., Wardrobe A)">
-                            <button onclick="addWardrobe()">Add</button>
+                            <input type="text" id="wardrobeName" placeholder="Nombre del armario (p. ej., Armario A)">
+                            <button onclick="addWardrobe()">Agregar</button>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label>➕ Add Shelf to Wardrobe</label>
+                        <label>➕ Agregar Estante al Armario</label>
                         <div class="form-row-full">
                             <select id="wardrobeForShelf" style="flex: 1;">
-                                <option value="">Select Wardrobe</option>
+                                <option value="">Seleccionar Armario</option>
                             </select>
-                            <button onclick="addShelf()" style="flex: 0 0 auto;">Add Shelf</button>
+                            <button onclick="addShelf()" style="flex: 0 0 auto;">Agregar Estante</button>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label>➕ Add Box to Wardrobe Shelf</label>
+                        <label>➕ Agregar Caja al Estante del Armario</label>
                         <div style="display: flex; gap: 10px;">
                             <select id="shelfForBox" style="flex: 1;">
-                                <option value="">Select Shelf</option>
+                                <option value="">Seleccionar Estante</option>
                             </select>
-                            <input type="text" id="wardrobeBoxName" placeholder="Box name" style="flex: 1;">
-                            <button onclick="addWardrobeBox()" style="flex: 0 0 auto;">Add</button>
+                            <input type="text" id="wardrobeBoxName" placeholder="Nombre de la caja" style="flex: 1;">
+                            <button onclick="addWardrobeBox()" style="flex: 0 0 auto;">Agregar</button>
                         </div>
                     </div>
                 </div>
 
-                <div class="section-title">🗂️ Storage Layout</div>
+                <div class="section-title">🗂️ Disposición de Almacenamiento</div>
                 <div class="storage-diagram" id="storageDiagram">
-                    <p style="text-align: center; color: #999;">Add spaces or wardrobes to visualize your inventory layout</p>
+                    <p style="text-align: center; color: #999;">Agregue espacios o armarios para visualizar la disposición de su inventario</p>
                 </div>
             </div>
         </div>
@@ -732,27 +732,27 @@
     <!-- Edit Modal -->
     <div class="modal" id="editModal">
         <div class="modal-content">
-            <h2>Edit Product</h2>
-            <input type="text" id="editName" placeholder="Product name">
-            <input type="number" id="editPrice" placeholder="Price" min="0" step="0.01">
-            <input type="number" id="editQuantity" placeholder="Quantity" min="0">
+            <h2>Editar Producto</h2>
+            <input type="text" id="editName" placeholder="Nombre del producto">
+            <input type="number" id="editPrice" placeholder="Precio" min="0" step="0.01">
+            <input type="number" id="editQuantity" placeholder="Cantidad" min="0">
             <select id="editStorageType">
-                <option value="space">Storage Type: Space</option>
-                <option value="wardrobe">Storage Type: Wardrobe</option>
+                <option value="space">Tipo de Almacenamiento: Espacio</option>
+                <option value="wardrobe">Tipo de Almacenamiento: Armario</option>
             </select>
             <select id="editStorageLocation">
-                <option value="">Select Location</option>
+                <option value="">Seleccionar ubicación</option>
             </select>
             <select id="editContainerType" style="display: none;">
-                <option value="direct">Direct in Space</option>
-                <option value="box">In a Box</option>
+                <option value="direct">Directo en Espacio</option>
+                <option value="box">En una Caja</option>
             </select>
             <select id="editContainerLocation" style="display: none;">
-                <option value="">Select Container</option>
+                <option value="">Seleccionar contenedor</option>
             </select>
             <div class="modal-actions">
-                <button onclick="saveEdit()">💾 Save</button>
-                <button onclick="closeEditModal()">Cancel</button>
+                <button onclick="saveEdit()">💾 Guardar</button>
+                <button onclick="closeEditModal()">Cancelar</button>
             </div>
         </div>
     </div>
@@ -794,11 +794,11 @@
         function addSpace() {
             const name = document.getElementById('spaceName').value.trim();
             if (!name) {
-                alert('Please enter a space name');
+                alert('Por favor ingrese un nombre de espacio');
                 return;
             }
             if (spaces.some(s => s.name === name)) {
-                alert('This space already exists');
+                alert('Este espacio ya existe');
                 return;
             }
             spaces.push({ name, boxes: [], products: [] });
@@ -811,14 +811,14 @@
         function addSpaceBox() {
             const spaceName = document.getElementById('spaceForBox').value;
             if (!spaceName) {
-                alert('Please select a space');
+                alert('Por favor seleccione un espacio');
                 return;
             }
             const space = spaces.find(s => s.name === spaceName);
             if (!space) return;
 
             const boxNumber = space.boxes.length + 1;
-            space.boxes.push({ id: boxNumber, name: `Box ${boxNumber}`, products: [] });
+            space.boxes.push({ id: boxNumber, name: `Caja ${boxNumber}`, products: [] });
             saveData();
             renderAll();
         }
@@ -827,11 +827,11 @@
         function addWardrobe() {
             const name = document.getElementById('wardrobeName').value.trim();
             if (!name) {
-                alert('Please enter a wardrobe name');
+                alert('Por favor ingrese un nombre de armario');
                 return;
             }
             if (wardrobes.some(w => w.name === name)) {
-                alert('This wardrobe already exists');
+                alert('Este armario ya existe');
                 return;
             }
             wardrobes.push({ name, shelves: [] });
@@ -844,14 +844,14 @@
         function addShelf() {
             const wardrobeName = document.getElementById('wardrobeForShelf').value;
             if (!wardrobeName) {
-                alert('Please select a wardrobe');
+                alert('Por favor seleccione un armario');
                 return;
             }
             const wardrobe = wardrobes.find(w => w.name === wardrobeName);
             if (!wardrobe) return;
 
             const shelfNumber = wardrobe.shelves.length + 1;
-            wardrobe.shelves.push({ id: shelfNumber, name: `Shelf ${shelfNumber}`, boxes: [] });
+            wardrobe.shelves.push({ id: shelfNumber, name: `Estante ${shelfNumber}`, boxes: [] });
             saveData();
             renderAll();
         }
@@ -862,7 +862,7 @@
             const boxName = document.getElementById('wardrobeBoxName').value.trim();
 
             if (!shelfId || !boxName) {
-                alert('Please select a shelf and enter a box name');
+                alert('Por favor seleccione un estante e ingrese un nombre de caja');
                 return;
             }
 
@@ -871,7 +871,7 @@
             const shelf = wardrobe?.shelves.find(s => s.id === parseInt(shelfNum));
 
             if (!shelf) {
-                alert('Shelf not found');
+                alert('Estante no encontrado');
                 return;
             }
 
@@ -883,7 +883,7 @@
 
         // Delete functions
         function deleteSpace(spaceName) {
-            if (confirm(`Delete "${spaceName}"?`)) {
+            if (confirm(`¿Eliminar "${spaceName}"?`)) {
                 spaces = spaces.filter(s => s.name !== spaceName);
                 products = products.filter(p => !(p.storageType === 'space' && p.storage === spaceName));
                 saveData();
@@ -902,7 +902,7 @@
         }
 
         function deleteWardrobe(wardrobeName) {
-            if (confirm(`Delete "${wardrobeName}"?`)) {
+            if (confirm(`¿Eliminar "${wardrobeName}"?`)) {
                 wardrobes = wardrobes.filter(w => w.name !== wardrobeName);
                 products = products.filter(p => !(p.storageType === 'wardrobe' && p.storage === wardrobeName));
                 saveData();
@@ -934,28 +934,28 @@
         // Update dropdowns
         function updateDropdowns() {
             // Storage type and location
-            document.getElementById('storageLocation').innerHTML = '<option value="">Select Location</option>';
+            document.getElementById('storageLocation').innerHTML = '<option value="">Seleccionar ubicación</option>';
             spaces.forEach(s => {
-                document.getElementById('storageLocation').innerHTML += `<option value="space|${s.name}">Space: ${s.name}</option>`;
+                document.getElementById('storageLocation').innerHTML += `<option value="space|${s.name}">Espacio: ${s.name}</option>`;
             });
             wardrobes.forEach(w => {
-                document.getElementById('storageLocation').innerHTML += `<option value="wardrobe|${w.name}">Wardrobe: ${w.name}</option>`;
+                document.getElementById('storageLocation').innerHTML += `<option value="wardrobe|${w.name}">Armario: ${w.name}</option>`;
             });
 
             // Space for box
-            document.getElementById('spaceForBox').innerHTML = '<option value="">Select Space</option>';
+            document.getElementById('spaceForBox').innerHTML = '<option value="">Seleccionar Espacio</option>';
             spaces.forEach(s => {
                 document.getElementById('spaceForBox').innerHTML += `<option value="${s.name}">${s.name}</option>`;
             });
 
             // Wardrobe for shelf
-            document.getElementById('wardrobeForShelf').innerHTML = '<option value="">Select Wardrobe</option>';
+            document.getElementById('wardrobeForShelf').innerHTML = '<option value="">Seleccionar Armario</option>';
             wardrobes.forEach(w => {
                 document.getElementById('wardrobeForShelf').innerHTML += `<option value="${w.name}">${w.name}</option>`;
             });
 
             // Shelf for box
-            document.getElementById('shelfForBox').innerHTML = '<option value="">Select Shelf</option>';
+            document.getElementById('shelfForBox').innerHTML = '<option value="">Seleccionar Estante</option>';
             wardrobes.forEach(w => {
                 w.shelves.forEach(s => {
                     document.getElementById('shelfForBox').innerHTML += `<option value="${w.name}|${s.id}">${w.name} - ${s.name}</option>`;
@@ -977,7 +977,7 @@
                 
                 if (document.getElementById('containerType').value === 'box') {
                     containerLocation.style.display = 'block';
-                    containerLocation.innerHTML = '<option value="">Select Box</option>';
+                    containerLocation.innerHTML = '<option value="">Seleccionar Caja</option>';
                     if (space) {
                         space.boxes.forEach(b => {
                             containerLocation.innerHTML += `<option value="${b.id}">${b.name}</option>`;
@@ -992,7 +992,7 @@
                 const wardrobeName = storageValue.split('|')[1];
                 const wardrobe = wardrobes.find(w => w.name === wardrobeName);
                 
-                containerLocation.innerHTML = '<option value="">Select Box</option>';
+                containerLocation.innerHTML = '<option value="">Seleccionar Caja</option>';
                 if (wardrobe) {
                     wardrobe.shelves.forEach(shelf => {
                         shelf.boxes.forEach(b => {
@@ -1028,7 +1028,7 @@
                 
                 if (document.getElementById('editContainerType').value === 'box') {
                     containerLocation.style.display = 'block';
-                    containerLocation.innerHTML = '<option value="">Select Box</option>';
+                    containerLocation.innerHTML = '<option value="">Seleccionar Caja</option>';
                     if (space) {
                         space.boxes.forEach(b => {
                             containerLocation.innerHTML += `<option value="${b.id}">${b.name}</option>`;
@@ -1043,7 +1043,7 @@
                 const wardrobeName = storageValue.split('|')[1];
                 const wardrobe = wardrobes.find(w => w.name === wardrobeName);
                 
-                containerLocation.innerHTML = '<option value="">Select Box</option>';
+                containerLocation.innerHTML = '<option value="">Seleccionar Caja</option>';
                 if (wardrobe) {
                     wardrobe.shelves.forEach(shelf => {
                         shelf.boxes.forEach(b => {
@@ -1066,7 +1066,7 @@
             const containerValue = document.getElementById('containerLocation').value;
 
             if (!name || isNaN(price) || isNaN(quantity) || !storageValue) {
-                alert('Please fill in all fields');
+                alert('Por favor complete todos los campos');
                 return;
             }
 
@@ -1077,7 +1077,7 @@
             if (storageType === 'space') {
                 if (document.getElementById('containerType').value === 'box') {
                     if (!containerValue) {
-                        alert('Please select a box');
+                        alert('Por favor seleccione una caja');
                         return;
                     }
                     product.container = 'box';
@@ -1087,7 +1087,7 @@
                 }
             } else {
                 if (!containerValue) {
-                    alert('Please select a box');
+                    alert('Por favor seleccione una caja');
                     return;
                 }
                 const [shelfId, boxId] = containerValue.split('|');
@@ -1133,7 +1133,7 @@
             const list = document.getElementById('productList');
             
             if (filtered.length === 0) {
-                list.innerHTML = '<div class="empty-state"><p>No products found. 🔍</p></div>';
+                list.innerHTML = '<div class="empty-state"><p>No se encontraron productos. 🔍</p></div>';
                 return;
             }
 
@@ -1145,7 +1145,7 @@
                         <div class="product-info">
                             <div class="product-name">${product.name}</div>
                             <div class="product-details">
-                                💰 $${product.price.toFixed(2)} | 📊 ${product.quantity} units
+                                💰 $${product.price.toFixed(2)} | 📊 ${product.quantity} unidades
                             </div>
                             <div class="product-location">📍 ${location}</div>
                         </div>
@@ -1159,7 +1159,7 @@
         }
 
         function deleteProduct(index) {
-            if (confirm('Delete this product?')) {
+            if (confirm('¿Eliminar este producto?')) {
                 products.splice(index, 1);
                 saveData();
                 renderAll();
@@ -1202,7 +1202,7 @@
             const containerValue = document.getElementById('editContainerLocation').value;
 
             if (!name || isNaN(price) || isNaN(quantity) || !storageValue) {
-                alert('Please fill in all fields');
+                alert('Por favor complete todos los campos');
                 return;
             }
 
@@ -1212,7 +1212,7 @@
             if (storageType === 'space') {
                 if (document.getElementById('editContainerType').value === 'box') {
                     if (!containerValue) {
-                        alert('Please select a box');
+                        alert('Por favor seleccione una caja');
                         return;
                     }
                     product.container = 'box';
@@ -1222,7 +1222,7 @@
                 }
             } else {
                 if (!containerValue) {
-                    alert('Please select a box');
+                    alert('Por favor seleccione una caja');
                     return;
                 }
                 const [shelfId, boxId] = containerValue.split('|');
@@ -1242,7 +1242,7 @@
             const diagram = document.getElementById('storageDiagram');
             
             if (spaces.length === 0 && wardrobes.length === 0) {
-                diagram.innerHTML = '<p style="text-align: center; color: #999;">Add spaces or wardrobes to visualize your inventory</p>';
+                diagram.innerHTML = '<p style="text-align: center; color: #999;">Agregue espacios o armarios para visualizar su inventario</p>';
                 return;
             }
 
@@ -1251,7 +1251,7 @@
             // Spaces Section
             if (spaces.length > 0) {
                 html += '<div class="storage-section">';
-                html += '<div class="storage-type-title">🔷 Floor Level Spaces</div>';
+                html += '<div class="storage-type-title">🔷 Espacios de Nivel de Piso</div>';
                 html += '<div class="storage-container">';
                 
                 spaces.forEach(space => {
@@ -1260,14 +1260,14 @@
                         <div class="space-card" id="space-${space.name}">
                             <div class="space-header">
                                 <div class="space-header-title">${space.name}</div>
-                                <button onclick="deleteSpace('${space.name}')">Delete</button>
+                                <button onclick="deleteSpace('${space.name}')">Eliminar</button>
                             </div>
                             <div class="space-content">
                     `;
 
                     if (directProducts.length > 0) {
                         html += `<div class="space-direct-products">
-                            <div class="space-direct-products-label">Direct Items</div>
+                            <div class="space-direct-products-label">Artículos Directos</div>
                         `;
                         directProducts.forEach(p => {
                             html += `<div class="space-direct-item">📦 ${p.name} (${p.quantity})</div>`;
@@ -1286,13 +1286,13 @@
                                 html += `<div class="space-box-item">${p.name} (${p.quantity})</div>`;
                             });
                         } else {
-                            html += '<div class="space-empty">Empty</div>';
+                            html += '<div class="space-empty">Vacío</div>';
                         }
-                        html += `<button class="space-box-delete" onclick="deleteSpaceBox('${space.name}', ${box.id})">Delete Box</button></div>`;
+                        html += `<button class="space-box-delete" onclick="deleteSpaceBox('${space.name}', ${box.id})">Eliminar Caja</button></div>`;
                     });
 
                     if (space.boxes.length === 0 && directProducts.length === 0) {
-                        html += '<div class="space-empty">Empty</div>';
+                        html += '<div class="space-empty">Vacío</div>';
                     }
 
                     html += '</div></div>';
@@ -1304,7 +1304,7 @@
             // Wardrobes Section
             if (wardrobes.length > 0) {
                 html += '<div class="storage-section">';
-                html += '<div class="storage-type-title">🗄️ Wardrobes</div>';
+                html += '<div class="storage-type-title">🗄️ Armarios</div>';
                 html += '<div class="storage-container">';
                 
                 wardrobes.forEach(wardrobe => {
@@ -1312,25 +1312,25 @@
                         <div class="wardrobe-card" id="wardrobe-${wardrobe.name}">
                             <div class="wardrobe-header">
                                 <div class="wardrobe-header-title">${wardrobe.name}</div>
-                                <button onclick="deleteWardrobe('${wardrobe.name}')">Delete</button>
+                                <button onclick="deleteWardrobe('${wardrobe.name}')">Eliminar</button>
                             </div>
                             <div class="wardrobe-content">
                     `;
 
                     if (wardrobe.shelves.length === 0) {
-                        html += '<div class="space-empty">No shelves</div>';
+                        html += '<div class="space-empty">Sin estantes</div>';
                     } else {
                         wardrobe.shelves.forEach(shelf => {
                             html += `
                                 <div class="shelf-item">
                                     <div class="shelf-header">
                                         <div class="shelf-header-title">${shelf.name}</div>
-                                        <button onclick="deleteShelf('${wardrobe.name}', ${shelf.id})">Delete</button>
+                                        <button onclick="deleteShelf('${wardrobe.name}', ${shelf.id})">Eliminar</button>
                                     </div>
                             `;
 
                             if (shelf.boxes.length === 0) {
-                                html += '<div class="space-empty" style="font-size: 10px;">No boxes</div>';
+                                html += '<div class="space-empty" style="font-size: 10px;">Sin cajas</div>';
                             } else {
                                 shelf.boxes.forEach(box => {
                                     const boxProducts = products.filter(p => p.storageType === 'wardrobe' && p.storage === wardrobe.name && p.shelfId === shelf.id && p.containerId === box.id);
@@ -1338,7 +1338,7 @@
                                         <div class="box-item" id="box-${wardrobe.name}-${shelf.id}-${box.id}">
                                             <div class="box-header">
                                                 <div class="box-header-title">📦 ${box.name}</div>
-                                                <button onclick="deleteWardrobeBox('${wardrobe.name}', ${shelf.id}, ${box.id})">Delete</button>
+                                                <button onclick="deleteWardrobeBox('${wardrobe.name}', ${shelf.id}, ${box.id})">Eliminar</button>
                                             </div>
                                     `;
                                     if (boxProducts.length > 0) {
@@ -1346,7 +1346,7 @@
                                             html += `<div class="box-product">${p.name} (${p.quantity})</div>`;
                                         });
                                     } else {
-                                        html += '<div class="space-empty" style="font-size: 9px;">Empty</div>';
+                                        html += '<div class="space-empty" style="font-size: 9px;">Vacío</div>';
                                     }
                                     html += '</div>';
                                 });
@@ -1390,11 +1390,11 @@
 
         function exportToCSV() {
             if (products.length === 0) {
-                alert('No products to export');
+                alert('No hay productos para exportar');
                 return;
             }
 
-            let csv = 'Product Name,Price,Quantity,Location\n';
+            let csv = 'Nombre del Producto,Precio,Cantidad,Ubicación\n';
             products.forEach(p => {
                 const location = getProductLocation(p);
                 csv += `"${p.name}",${p.price},${p.quantity},"${location}"\n`;
@@ -1409,7 +1409,7 @@
         }
 
         function handleFileUpload(event) {
-            alert('Please set up spaces and wardrobes first. CSV import coming soon.');
+            alert('Por favor configure espacios y armarios primero. Importación CSV próximamente.');
             event.target.value = '';
         }
 
