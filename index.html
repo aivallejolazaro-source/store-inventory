@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -32,6 +32,56 @@
             color: white;
             padding: 30px;
             text-align: center;
+            position: relative;
+        }
+
+        .auth-status {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sync-status {
+            position: absolute;
+            top: 10px;
+            left: 20px;
+            font-size: 12px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .sync-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #28a745;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .google-signin-btn {
+            background: white;
+            color: #333;
+            padding: 8px 16px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 12px;
+            transition: background 0.3s;
+        }
+
+        .google-signin-btn:hover {
+            background: #f0f0f0;
         }
 
         header h1 {
@@ -125,15 +175,6 @@
 
         button.edit-btn:hover {
             background: #218838;
-        }
-
-        button.import-btn {
-            background: #ffc107;
-            color: black;
-        }
-
-        button.import-btn:hover {
-            background: #e0a800;
         }
 
         button.export-btn {
@@ -315,7 +356,6 @@
             margin-top: 5px;
         }
 
-        /* Storage Visualization */
         .storage-diagram {
             background: #f8f9fa;
             padding: 20px;
@@ -345,7 +385,6 @@
             margin-bottom: 15px;
         }
 
-        /* SPACES Storage */
         .space-card {
             flex: 1;
             min-width: 200px;
@@ -443,7 +482,6 @@
             font-style: italic;
         }
 
-        /* WARDROBES Storage */
         .wardrobe-card {
             flex: 1;
             min-width: 200px;
@@ -598,8 +636,14 @@
 </head>
 <body>
     <div class="container">
-        <!-- Version actualizada: Botón de importar CSV removido -->
         <header>
+            <div class="sync-status">
+                <div class="sync-indicator"></div>
+                <span id="syncStatus">Conectando...</span>
+            </div>
+            <div class="auth-status">
+                <button id="authBtn" class="google-signin-btn" onclick="handleAuth()">🔐 Conectar con Google</button>
+            </div>
             <h1>📦 Inventario AHANC</h1>
             <p>Gestione sus productos con seguimiento de ubicación visual - Espacios y Armarios</p>
         </header>
@@ -620,7 +664,6 @@
         </div>
 
         <div class="main-content">
-            <!-- Left Column: Products -->
             <div class="section">
                 <div class="controls">
                     <div class="controls-row">
@@ -663,12 +706,10 @@
                 </div>
             </div>
 
-            <!-- Right Column: Storage Visualization & Settings -->
             <div class="section">
                 <div class="controls-section">
                     <h3 style="margin-bottom: 15px; color: #333;">⚙️ Gestionar Ubicaciones</h3>
                     
-                    <!-- SPACES Management -->
                     <div class="form-group">
                         <label>➕ Agregar Nuevo Espacio</label>
                         <div class="form-row-full">
@@ -687,7 +728,6 @@
                         </div>
                     </div>
 
-                    <!-- WARDROBES Management -->
                     <hr style="margin: 15px 0; border: none; border-top: 1px solid #ddd;">
 
                     <div class="form-group">
@@ -728,7 +768,6 @@
         </div>
     </div>
 
-    <!-- Edit Modal -->
     <div class="modal" id="editModal">
         <div class="modal-content">
             <h2>Editar Producto</h2>
@@ -756,14 +795,120 @@
         </div>
     </div>
 
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js"></script>
+    <script src="https://accounts.google.com/gsi/client"></script>
+
     <script>
         let products = [];
         let spaces = [];
         let wardrobes = [];
         let editingIndex = null;
+        let firebaseConfig = null;
+        let currentUser = null;
+        let db = null;
+        let auth = null;
 
-        // Load data from localStorage
-        function loadData() {
+        // ==================== FIREBASE SETUP ====================
+        function initFirebase() {
+            // Esta configuración será reemplazada con la real
+            firebaseConfig = {
+                apiKey: "AIzaSyDUMockKey", // Reemplazar
+                authDomain: "tu-proyecto.firebaseapp.com", // Reemplazar
+                projectId: "tu-proyecto", // Reemplazar
+                storageBucket: "tu-proyecto.appspot.com", // Reemplazar
+                messagingSenderId: "123456789", // Reemplazar
+                appId: "1:123456789:web:abc123" // Reemplazar
+            };
+
+            try {
+                firebase.initializeApp(firebaseConfig);
+                auth = firebase.auth();
+                db = firebase.database();
+                
+                auth.onAuthStateChanged((user) => {
+                    currentUser = user;
+                    updateAuthUI();
+                    if (user) {
+                        loadDataFromFirebase();
+                    } else {
+                        loadDataFromLocalStorage();
+                    }
+                });
+            } catch (error) {
+                console.log("Firebase no configurado. Usando localStorage.");
+                loadDataFromLocalStorage();
+            }
+        }
+
+        function handleAuth() {
+            if (currentUser) {
+                auth.signOut();
+            } else {
+                auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
+            }
+        }
+
+        function updateAuthUI() {
+            const btn = document.getElementById('authBtn');
+            if (currentUser) {
+                btn.textContent = `👤 ${currentUser.displayName} (Desconectar)`;
+                btn.style.background = '#28a745';
+                updateSyncStatus('Sincronizado con Firebase', '#28a745');
+            } else {
+                btn.textContent = '🔐 Conectar con Google';
+                btn.style.background = 'white';
+                btn.style.color = '#333';
+                updateSyncStatus('Usando almacenamiento local', '#ffc107');
+            }
+        }
+
+        function updateSyncStatus(text, color) {
+            const status = document.getElementById('syncStatus');
+            const indicator = document.querySelector('.sync-indicator');
+            status.textContent = text;
+            indicator.style.background = color;
+        }
+
+        // ==================== FIREBASE DATA SYNC ====================
+        function saveDataToFirebase() {
+            if (!currentUser || !db) return;
+            
+            const userId = currentUser.uid;
+            const updates = {};
+            updates[`/users/${userId}/products`] = products;
+            updates[`/users/${userId}/spaces`] = spaces;
+            updates[`/users/${userId}/wardrobes`] = wardrobes;
+            
+            db.ref().update(updates).catch(err => {
+                console.error("Error al guardar en Firebase:", err);
+                updateSyncStatus('Error en sincronización', '#dc3545');
+            });
+        }
+
+        function loadDataFromFirebase() {
+            if (!currentUser || !db) return;
+            
+            const userId = currentUser.uid;
+            db.ref(`/users/${userId}`).once('value').then((snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    products = data.products || [];
+                    spaces = data.spaces || [];
+                    wardrobes = data.wardrobes || [];
+                } else {
+                    products = [];
+                    spaces = [];
+                    wardrobes = [];
+                }
+                renderAll();
+            });
+        }
+
+        // ==================== LOCAL STORAGE ====================
+        function loadDataFromLocalStorage() {
             const savedProducts = localStorage.getItem('products');
             const savedSpaces = localStorage.getItem('spaces');
             const savedWardrobes = localStorage.getItem('wardrobes');
@@ -779,6 +924,10 @@
             localStorage.setItem('products', JSON.stringify(products));
             localStorage.setItem('spaces', JSON.stringify(spaces));
             localStorage.setItem('wardrobes', JSON.stringify(wardrobes));
+            
+            if (currentUser && db) {
+                saveDataToFirebase();
+            }
             updateStats();
         }
 
@@ -789,7 +938,7 @@
             updateStats();
         }
 
-        // Add Space
+        // ==================== SPACE MANAGEMENT ====================
         function addSpace() {
             const name = document.getElementById('spaceName').value.trim();
             if (!name) {
@@ -806,7 +955,6 @@
             renderAll();
         }
 
-        // Add Box to Space
         function addSpaceBox() {
             const spaceName = document.getElementById('spaceForBox').value;
             if (!spaceName) {
@@ -822,7 +970,26 @@
             renderAll();
         }
 
-        // Add Wardrobe
+        function deleteSpace(spaceName) {
+            if (confirm(`¿Eliminar "${spaceName}"?`)) {
+                spaces = spaces.filter(s => s.name !== spaceName);
+                products = products.filter(p => !(p.storageType === 'space' && p.storage === spaceName));
+                saveData();
+                renderAll();
+            }
+        }
+
+        function deleteSpaceBox(spaceName, boxId) {
+            const space = spaces.find(s => s.name === spaceName);
+            if (space) {
+                space.boxes = space.boxes.filter(b => b.id !== boxId);
+                products = products.filter(p => !(p.storageType === 'space' && p.storage === spaceName && p.container === 'box' && p.containerId === boxId));
+                saveData();
+                renderAll();
+            }
+        }
+
+        // ==================== WARDROBE MANAGEMENT ====================
         function addWardrobe() {
             const name = document.getElementById('wardrobeName').value.trim();
             if (!name) {
@@ -839,7 +1006,6 @@
             renderAll();
         }
 
-        // Add Shelf to Wardrobe
         function addShelf() {
             const wardrobeName = document.getElementById('wardrobeForShelf').value;
             if (!wardrobeName) {
@@ -855,7 +1021,6 @@
             renderAll();
         }
 
-        // Add Box to Wardrobe Shelf
         function addWardrobeBox() {
             const shelfId = document.getElementById('shelfForBox').value;
             const boxName = document.getElementById('wardrobeBoxName').value.trim();
@@ -878,26 +1043,6 @@
             saveData();
             document.getElementById('wardrobeBoxName').value = '';
             renderAll();
-        }
-
-        // Delete functions
-        function deleteSpace(spaceName) {
-            if (confirm(`¿Eliminar "${spaceName}"?`)) {
-                spaces = spaces.filter(s => s.name !== spaceName);
-                products = products.filter(p => !(p.storageType === 'space' && p.storage === spaceName));
-                saveData();
-                renderAll();
-            }
-        }
-
-        function deleteSpaceBox(spaceName, boxId) {
-            const space = spaces.find(s => s.name === spaceName);
-            if (space) {
-                space.boxes = space.boxes.filter(b => b.id !== boxId);
-                products = products.filter(p => !(p.storageType === 'space' && p.storage === spaceName && p.container === 'box' && p.containerId === boxId));
-                saveData();
-                renderAll();
-            }
         }
 
         function deleteWardrobe(wardrobeName) {
@@ -930,9 +1075,8 @@
             }
         }
 
-        // Update dropdowns
+        // ==================== DROPDOWNS ====================
         function updateDropdowns() {
-            // Storage type and location
             document.getElementById('storageLocation').innerHTML = '<option value="">Seleccionar ubicación</option>';
             spaces.forEach(s => {
                 document.getElementById('storageLocation').innerHTML += `<option value="space|${s.name}">Espacio: ${s.name}</option>`;
@@ -941,19 +1085,16 @@
                 document.getElementById('storageLocation').innerHTML += `<option value="wardrobe|${w.name}">Armario: ${w.name}</option>`;
             });
 
-            // Space for box
             document.getElementById('spaceForBox').innerHTML = '<option value="">Seleccionar Espacio</option>';
             spaces.forEach(s => {
                 document.getElementById('spaceForBox').innerHTML += `<option value="${s.name}">${s.name}</option>`;
             });
 
-            // Wardrobe for shelf
             document.getElementById('wardrobeForShelf').innerHTML = '<option value="">Seleccionar Armario</option>';
             wardrobes.forEach(w => {
                 document.getElementById('wardrobeForShelf').innerHTML += `<option value="${w.name}">${w.name}</option>`;
             });
 
-            // Shelf for box
             document.getElementById('shelfForBox').innerHTML = '<option value="">Seleccionar Estante</option>';
             wardrobes.forEach(w => {
                 w.shelves.forEach(s => {
@@ -962,9 +1103,7 @@
             });
         }
 
-        // Update container options based on storage type
         function updateContainerOptions() {
-            const storageType = document.getElementById('storageType').value;
             const storageValue = document.getElementById('storageLocation').value;
             const containerType = document.getElementById('containerType');
             const containerLocation = document.getElementById('containerLocation');
@@ -1005,15 +1144,181 @@
             }
         }
 
-        // Event listeners
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('storageLocation').addEventListener('change', updateContainerOptions);
-            document.getElementById('containerType').addEventListener('change', updateContainerOptions);
-            document.getElementById('editStorageLocation').addEventListener('change', updateEditContainerOptions);
-            document.getElementById('editContainerType').addEventListener('change', updateEditContainerOptions);
-            document.getElementById('searchInput').addEventListener('input', renderProducts);
-            loadData();
-        });
+        // ==================== PRODUCT MANAGEMENT ====================
+        function addProduct() {
+            const name = document.getElementById('productName').value.trim();
+            const price = parseFloat(document.getElementById('productPrice').value);
+            const quantity = parseInt(document.getElementById('productQuantity').value);
+            const storageValue = document.getElementById('storageLocation').value;
+            const containerValue = document.getElementById('containerLocation').value;
+
+            if (!name || isNaN(price) || isNaN(quantity) || !storageValue) {
+                alert('Por favor rellene todos los campos');
+                return;
+            }
+
+            const [storageType, storageName] = storageValue.split('|');
+            let product = { name, price, quantity, storageType, storage: storageName };
+
+            if (storageType === 'space') {
+                if (document.getElementById('containerType').value === 'box') {
+                    if (!containerValue) {
+                        alert('Por favor seleccione una caja');
+                        return;
+                    }
+                    product.container = 'box';
+                    product.containerId = parseInt(containerValue);
+                } else {
+                    product.container = 'direct';
+                }
+            } else {
+                if (!containerValue) {
+                    alert('Por favor seleccione una caja');
+                    return;
+                }
+                const [shelfId, boxId] = containerValue.split('|');
+                product.shelfId = parseInt(shelfId);
+                product.containerId = parseInt(boxId);
+                product.container = 'box';
+            }
+
+            products.push(product);
+            saveData();
+            document.getElementById('productName').value = '';
+            document.getElementById('productPrice').value = '';
+            document.getElementById('productQuantity').value = '';
+            document.getElementById('storageLocation').value = '';
+            document.getElementById('containerLocation').value = '';
+            updateContainerOptions();
+            renderAll();
+        }
+
+        function deleteProduct(index) {
+            if (confirm('¿Eliminar este producto?')) {
+                products.splice(index, 1);
+                saveData();
+                renderAll();
+            }
+        }
+
+        function getProductLocation(product) {
+            if (product.storageType === 'space') {
+                let location = `${product.storage}`;
+                if (product.container === 'box') {
+                    const space = spaces.find(s => s.name === product.storage);
+                    const box = space?.boxes.find(b => b.id === product.containerId);
+                    if (box) location += ` - ${box.name}`;
+                }
+                return location;
+            } else {
+                const wardrobe = wardrobes.find(w => w.name === product.storage);
+                const shelf = wardrobe?.shelves.find(s => s.id === product.shelfId);
+                const box = shelf?.boxes.find(b => b.id === product.containerId);
+                return `${product.storage} - ${shelf?.name} - ${box?.name}`;
+            }
+        }
+
+        function renderProducts() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = products.filter(p => p.name.toLowerCase().includes(searchTerm));
+
+            const list = document.getElementById('productList');
+            
+            if (filtered.length === 0) {
+                list.innerHTML = '<div class="empty-state"><p>Sin productos encontrados. 🔍</p></div>';
+                return;
+            }
+
+            list.innerHTML = filtered.map((product, index) => {
+                const actualIndex = products.indexOf(product);
+                const location = getProductLocation(product);
+                return `
+                    <div class="product-item" onclick="highlightLocation('${product.storageType}', '${product.storage}', ${product.storageType === 'space' ? product.container === 'box' ? product.containerId : -1 : product.shelfId + '|' + product.containerId})">
+                        <div class="product-info">
+                            <div class="product-name">${product.name}</div>
+                            <div class="product-details">
+                                💰 $${product.price.toFixed(2)} | 📊 ${product.quantity} unidades
+                            </div>
+                            <div class="product-location">📍 ${location}</div>
+                        </div>
+                        <div class="product-actions">
+                            <button class="edit-btn" onclick="event.stopPropagation(); openEditModal(${actualIndex})">✏️</button>
+                            <button class="delete-btn" onclick="event.stopPropagation(); deleteProduct(${actualIndex})">🗑️</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function openEditModal(index) {
+            editingIndex = index;
+            const product = products[index];
+            document.getElementById('editName').value = product.name;
+            document.getElementById('editPrice').value = product.price;
+            document.getElementById('editQuantity').value = product.quantity;
+            document.getElementById('editStorageType').value = product.storageType;
+            
+            if (product.storageType === 'space') {
+                document.getElementById('editStorageLocation').value = `space|${product.storage}`;
+                document.getElementById('editContainerType').value = product.container;
+                if (product.container === 'box') {
+                    document.getElementById('editContainerLocation').value = product.containerId;
+                }
+            } else {
+                document.getElementById('editStorageLocation').value = `wardrobe|${product.storage}`;
+                document.getElementById('editContainerLocation').value = `${product.shelfId}|${product.containerId}`;
+            }
+            
+            updateEditContainerOptions();
+            document.getElementById('editModal').classList.add('active');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('active');
+        }
+
+        function saveEdit() {
+            const name = document.getElementById('editName').value.trim();
+            const price = parseFloat(document.getElementById('editPrice').value);
+            const quantity = parseInt(document.getElementById('editQuantity').value);
+            const storageValue = document.getElementById('editStorageLocation').value;
+            const containerValue = document.getElementById('editContainerLocation').value;
+
+            if (!name || isNaN(price) || isNaN(quantity) || !storageValue) {
+                alert('Por favor rellene todos los campos');
+                return;
+            }
+
+            const [storageType, storageName] = storageValue.split('|');
+            let product = { name, price, quantity, storageType, storage: storageName };
+
+            if (storageType === 'space') {
+                if (document.getElementById('editContainerType').value === 'box') {
+                    if (!containerValue) {
+                        alert('Por favor seleccione una caja');
+                        return;
+                    }
+                    product.container = 'box';
+                    product.containerId = parseInt(containerValue);
+                } else {
+                    product.container = 'direct';
+                }
+            } else {
+                if (!containerValue) {
+                    alert('Por favor seleccione una caja');
+                    return;
+                }
+                const [shelfId, boxId] = containerValue.split('|');
+                product.shelfId = parseInt(shelfId);
+                product.containerId = parseInt(boxId);
+                product.container = 'box';
+            }
+
+            products[editingIndex] = product;
+            saveData();
+            closeEditModal();
+            renderAll();
+        }
 
         function updateEditContainerOptions() {
             const storageValue = document.getElementById('editStorageLocation').value;
@@ -1056,187 +1361,6 @@
             }
         }
 
-        // Add Product
-        function addProduct() {
-            const name = document.getElementById('productName').value.trim();
-            const price = parseFloat(document.getElementById('productPrice').value);
-            const quantity = parseInt(document.getElementById('productQuantity').value);
-            const storageValue = document.getElementById('storageLocation').value;
-            const containerValue = document.getElementById('containerLocation').value;
-
-            if (!name || isNaN(price) || isNaN(quantity) || !storageValue) {
-                alert('Por favor complete todos los campos');
-                return;
-            }
-
-            const [storageType, storageName] = storageValue.split('|');
-
-            let product = { name, price, quantity, storageType, storage: storageName };
-
-            if (storageType === 'space') {
-                if (document.getElementById('containerType').value === 'box') {
-                    if (!containerValue) {
-                        alert('Por favor seleccione una caja');
-                        return;
-                    }
-                    product.container = 'box';
-                    product.containerId = parseInt(containerValue);
-                } else {
-                    product.container = 'direct';
-                }
-            } else {
-                if (!containerValue) {
-                    alert('Por favor seleccione una caja');
-                    return;
-                }
-                const [shelfId, boxId] = containerValue.split('|');
-                product.shelfId = parseInt(shelfId);
-                product.containerId = parseInt(boxId);
-                product.container = 'box';
-            }
-
-            products.push(product);
-            saveData();
-            document.getElementById('productName').value = '';
-            document.getElementById('productPrice').value = '';
-            document.getElementById('productQuantity').value = '';
-            document.getElementById('storageLocation').value = '';
-            document.getElementById('containerLocation').value = '';
-            updateContainerOptions();
-            renderAll();
-        }
-
-        // Get product location display
-        function getProductLocation(product) {
-            if (product.storageType === 'space') {
-                let location = `${product.storage}`;
-                if (product.container === 'box') {
-                    const space = spaces.find(s => s.name === product.storage);
-                    const box = space?.boxes.find(b => b.id === product.containerId);
-                    if (box) location += ` - ${box.name}`;
-                }
-                return location;
-            } else {
-                const wardrobe = wardrobes.find(w => w.name === product.storage);
-                const shelf = wardrobe?.shelves.find(s => s.id === product.shelfId);
-                const box = shelf?.boxes.find(b => b.id === product.containerId);
-                return `${product.storage} - ${shelf?.name} - ${box?.name}`;
-            }
-        }
-
-        // Render products
-        function renderProducts() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const filtered = products.filter(p => p.name.toLowerCase().includes(searchTerm));
-
-            const list = document.getElementById('productList');
-            
-            if (filtered.length === 0) {
-                list.innerHTML = '<div class="empty-state"><p>No se encontraron productos. 🔍</p></div>';
-                return;
-            }
-
-            list.innerHTML = filtered.map((product, index) => {
-                const actualIndex = products.indexOf(product);
-                const location = getProductLocation(product);
-                return `
-                    <div class="product-item" onclick="highlightLocation('${product.storageType}', '${product.storage}', ${product.storageType === 'space' ? product.container === 'box' ? product.containerId : -1 : product.shelfId + '|' + product.containerId})">
-                        <div class="product-info">
-                            <div class="product-name">${product.name}</div>
-                            <div class="product-details">
-                                💰 $${product.price.toFixed(2)} | 📊 ${product.quantity} unidades
-                            </div>
-                            <div class="product-location">📍 ${location}</div>
-                        </div>
-                        <div class="product-actions">
-                            <button class="edit-btn" onclick="event.stopPropagation(); openEditModal(${actualIndex})">✏️</button>
-                            <button class="delete-btn" onclick="event.stopPropagation(); deleteProduct(${actualIndex})">🗑️</button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function deleteProduct(index) {
-            if (confirm('¿Eliminar este producto?')) {
-                products.splice(index, 1);
-                saveData();
-                renderAll();
-            }
-        }
-
-        // Edit Modal
-        function openEditModal(index) {
-            editingIndex = index;
-            const product = products[index];
-            document.getElementById('editName').value = product.name;
-            document.getElementById('editPrice').value = product.price;
-            document.getElementById('editQuantity').value = product.quantity;
-            document.getElementById('editStorageType').value = product.storageType;
-            
-            if (product.storageType === 'space') {
-                document.getElementById('editStorageLocation').value = `space|${product.storage}`;
-                document.getElementById('editContainerType').value = product.container;
-                if (product.container === 'box') {
-                    document.getElementById('editContainerLocation').value = product.containerId;
-                }
-            } else {
-                document.getElementById('editStorageLocation').value = `wardrobe|${product.storage}`;
-                document.getElementById('editContainerLocation').value = `${product.shelfId}|${product.containerId}`;
-            }
-            
-            updateEditContainerOptions();
-            document.getElementById('editModal').classList.add('active');
-        }
-
-        function closeEditModal() {
-            document.getElementById('editModal').classList.remove('active');
-        }
-
-        function saveEdit() {
-            const name = document.getElementById('editName').value.trim();
-            const price = parseFloat(document.getElementById('editPrice').value);
-            const quantity = parseInt(document.getElementById('editQuantity').value);
-            const storageValue = document.getElementById('editStorageLocation').value;
-            const containerValue = document.getElementById('editContainerLocation').value;
-
-            if (!name || isNaN(price) || isNaN(quantity) || !storageValue) {
-                alert('Por favor complete todos los campos');
-                return;
-            }
-
-            const [storageType, storageName] = storageValue.split('|');
-            let product = { name, price, quantity, storageType, storage: storageName };
-
-            if (storageType === 'space') {
-                if (document.getElementById('editContainerType').value === 'box') {
-                    if (!containerValue) {
-                        alert('Por favor seleccione una caja');
-                        return;
-                    }
-                    product.container = 'box';
-                    product.containerId = parseInt(containerValue);
-                } else {
-                    product.container = 'direct';
-                }
-            } else {
-                if (!containerValue) {
-                    alert('Por favor seleccione una caja');
-                    return;
-                }
-                const [shelfId, boxId] = containerValue.split('|');
-                product.shelfId = parseInt(shelfId);
-                product.containerId = parseInt(boxId);
-                product.container = 'box';
-            }
-
-            products[editingIndex] = product;
-            saveData();
-            closeEditModal();
-            renderAll();
-        }
-
-        // Render storage diagram
         function renderStorageDiagram() {
             const diagram = document.getElementById('storageDiagram');
             
@@ -1247,10 +1371,9 @@
 
             let html = '';
 
-            // Spaces Section
             if (spaces.length > 0) {
                 html += '<div class="storage-section">';
-                html += '<div class="storage-type-title">🔷 Espacios de Nivel de Piso</div>';
+                html += '<div class="storage-type-title">🔷 Espacios de Piso</div>';
                 html += '<div class="storage-container">';
                 
                 spaces.forEach(space => {
@@ -1285,13 +1408,13 @@
                                 html += `<div class="space-box-item">${p.name} (${p.quantity})</div>`;
                             });
                         } else {
-                            html += '<div class="space-empty">Vacío</div>';
+                            html += '<div class="space-empty">Vacía</div>';
                         }
                         html += `<button class="space-box-delete" onclick="deleteSpaceBox('${space.name}', ${box.id})">Eliminar Caja</button></div>`;
                     });
 
                     if (space.boxes.length === 0 && directProducts.length === 0) {
-                        html += '<div class="space-empty">Vacío</div>';
+                        html += '<div class="space-empty">Vacía</div>';
                     }
 
                     html += '</div></div>';
@@ -1300,7 +1423,6 @@
                 html += '</div></div>';
             }
 
-            // Wardrobes Section
             if (wardrobes.length > 0) {
                 html += '<div class="storage-section">';
                 html += '<div class="storage-type-title">🗄️ Armarios</div>';
@@ -1345,7 +1467,7 @@
                                             html += `<div class="box-product">${p.name} (${p.quantity})</div>`;
                                         });
                                     } else {
-                                        html += '<div class="space-empty" style="font-size: 9px;">Vacío</div>';
+                                        html += '<div class="space-empty" style="font-size: 9px;">Vacía</div>';
                                     }
                                     html += '</div>';
                                 });
@@ -1371,12 +1493,10 @@
 
             if (storageType === 'space') {
                 if (locationData === -1) {
-                    // Direct in space
                     const card = document.getElementById(`space-${storage}`);
                     const directDiv = card?.querySelector('.space-direct-products');
                     if (directDiv) directDiv.classList.add('highlighted');
                 } else {
-                    // In box
                     const boxDiv = document.getElementById(`space-box-${storage}-${locationData}`);
                     if (boxDiv) boxDiv.classList.add('highlighted');
                 }
@@ -1389,7 +1509,7 @@
 
         function exportToCSV() {
             if (products.length === 0) {
-                alert('No hay productos para exportar');
+                alert('Sin productos para exportar');
                 return;
             }
 
@@ -1403,7 +1523,7 @@
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'inventory.csv';
+            a.download = 'inventario.csv';
             a.click();
         }
 
@@ -1415,8 +1535,18 @@
             document.getElementById('totalLocations').textContent = totalLocations;
         }
 
-        document.getElementById('editModal').addEventListener('click', (e) => {
-            if (e.target.id === 'editModal') closeEditModal();
+        // ==================== INITIALIZATION ====================
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('storageLocation').addEventListener('change', updateContainerOptions);
+            document.getElementById('containerType').addEventListener('change', updateContainerOptions);
+            document.getElementById('editStorageLocation').addEventListener('change', updateEditContainerOptions);
+            document.getElementById('editContainerType').addEventListener('change', updateEditContainerOptions);
+            document.getElementById('searchInput').addEventListener('input', renderProducts);
+            document.getElementById('editModal').addEventListener('click', (e) => {
+                if (e.target.id === 'editModal') closeEditModal();
+            });
+            
+            initFirebase();
         });
     </script>
 </body>
